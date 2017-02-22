@@ -1,37 +1,36 @@
-// Import the model (burger.js) to use its database functions.
+var express = require("express");
+
+var router = express.Router();
 var db = require("../models");
 
-module.exports = function(app) {
+router.get("/", function(req, res) {
+      db.burgers.findAll({raw: true}).then(function(dbBurgers) {
+        var data = {
+          burgers: dbBurgers
+        };
+        res.render("index", data);
+     });
+});
 
-  // GET route for getting all of the posts
-  app.get("/", function(req, res) {
-    var query = {};
-  
-    db.burgers.findAll({include: [db.burgers]}).then(function(dbBurgers) {
-      res.json(dbBurgers);
+router.post("/", function(req, res) {
+    db.burgers.create({
+        burger_name: req.body.name,
+        devoured: false
+    }).then(function(dbBurgers) {
+        res.redirect("/");    
     });
+});
+
+router.put("/:id", function(req, res) {
+  var id = req.params.id;
+  db.burgers.update({devoured : true}, {
+    where: {id: id}
+  }).then(function(dbBurgers) {
+    res.redirect("/");  
   });
-
-  //post rout
-  app.post("/", function(req, res) {
-    db.burgers.create(req.body).then(function(dbBurgers) {
-      res.json(dbPost);
-    });
-  });
+});
 
 
-  // PUT 
-  app.put("/:id", function(req, res) {
-    db.Post.update(
-      req.body,
-      {
-        where: {
-          id: req.body.id
-        }
-      }).then(function(dbBurgers) {
-        res.json(dbBurgers);
-      });
-  });
-};
-
+// Export routes for server.js to use.
+module.exports = router;
 
